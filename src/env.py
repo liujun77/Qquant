@@ -18,8 +18,8 @@ class Stock:
         self.data = self.data.dropna()
         
         self.window = 30
-        
-        self.training_data = np.zeros((len(self.data)-self.window, self.window), dtype=np.float)
+        # len(self.data)-self.window
+        self.training_data = np.zeros((30000, self.window), dtype=np.float)
         for i in range(0, len(self.training_data)):
             for j in range(0, 30):
                 self.training_data[i,j] = float(self.data['close'].iloc[i+j])
@@ -39,33 +39,9 @@ class Stock:
             action_reward = -1 * action_reward
 
         stock_done = False
-        if self.stock_index >= len(self.stock_data)-1:
+        if self.stock_index >= len(self.training_data)-1:
             stock_done = True
         else:
             stock_done = False
         return self.training_data[self.stock_index], action_reward, stock_done, 0
     
-class Dqn:
-    def __init__(self, env):
-        # init experience replay
-        self.replay_buffer = deque()
-
-        # init some parameters
-        self.time_step = 0
-        self.epsilon = INITIAL_EPSILON
-        
-        #self.state_dim = env.observation_space.shape[0]
-        #self.action_dim = env.action_space.n
-        
-        self.state_dim = day_len
-        self.action_dim = 3
-        
-        
-        self.create_Q_network()
-        self.create_training_method()
-        
-        # Init session
-        self.session = tf.InteractiveSession()
-        self.session.run(tf.initialize_all_variables())
-        
-        
