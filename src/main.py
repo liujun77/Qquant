@@ -8,12 +8,12 @@ Created on Mon Aug  7 15:37:43 2017
 
 import env
 import agent
+import numpy as np
 
-ENV_NAME = 'CartPole-v0'
 EPISODE = 10000 # Episode limitation
-STEP = 1000   #300 # Step limitation in an episode
-TEST = 10 # The number of experiment test every 100 episode
-
+STEP = 10000   #300 # Step limitation in an episode
+TEST = 1 # The number of experiment test every 100 episode
+batch_size = 100
 
 
 
@@ -22,45 +22,77 @@ TEST = 10 # The number of experiment test every 100 episode
 Env = env.Stock("../data/RB.csv") 
 Agent = agent.Dqn()
 
-print '開始執行'
+print 'begin'
 for episode in xrange(EPISODE):
 
     # initialize task
     state = Env.reset()
-
+    state = np.reshape(state, [1, Agent.state_dim])
     # Train
     for step in xrange(STEP):
         action = Agent.egreedy_action(state) # e-greedy action for trai
     
-        next_state,reward,done,_ = Env.step(action)
-
+        next_state,reward,done = Env.step(action)
+        next_state = np.reshape(next_state, [1, Agent.state_dim])
+        
         # Define reward for agent
-        reward_agent = -1 if done else 0.1
-        Agent.perceive(state,action,reward,next_state,done)
+        Agent.remember(state,action,reward,next_state,done)
         state = next_state
-        if done:
+        if done or step==STEP-1:
+            Agent.update_target_model()
+            print("step: {}, episode: {}/{}, score: {}, e: {:.2}"
+                  .format(step, episode, EPISODE, Env.total_reward, Agent.epsilon))
             break
+    Agent.replay(batch_size)
  
     # Test every 100 episodes
-    if episode % 10 == 0:
+    if episode % 1000 == 0:
         total_reward = 0
 
         for i in xrange(TEST):
             state = Env.reset()
-
+            state = np.reshape(state, [1, Agent.state_dim])
             for j in xrange(STEP):
                 #Env.render()
                 action = Agent.action(state)   # direct action for test
-                state,reward,done,_ = Env.step(action)
+                state,reward,done = Env.step(action)
+                state = np.reshape(state, [1, Agent.state_dim])
                 #print reward
                 total_reward += reward
                 if done:
+                    print 'break'
                     break
 
         ave_reward = total_reward/TEST
         print 'episode: ',episode,'Evaluation Average Reward:',ave_reward
-        if ave_reward >= 200:
-            print '程式結束' 
+        #print 'episode: ',episode,'Evaluation Average Reward:',Env.total_reward
+        Agent.save('model')
+        #if ave_reward >= 500:
+        #    print '程式結束' 
+        #    break
+
+#%%
+
+total_reward = 0
+
+for i in xrange(TEST):
+    state = Env.reset()
+    state = np.reshape(state, [1, Agent.state_dim])
+    for j in xrange(STEP*2):
+        #Env.render()
+        action = Agent.action(state)   # direct action for test
+
+        state,reward,done = Env.step(action)
+        state = np.reshape(state, [1, Agent.state_dim])
+        #print reward
+        total_reward += reward
+        if action<>4:
+            print 'id = ', j, 'action = ', action, 'price = ', state[0][-1], 'tot = ', total_reward
+        raw_input()
+        if done:
+            print 'break'
             break
 
-
+ave_reward = total_reward/TEST
+print 'episode: ',episode,'Evaluation Average Reward:',ave_reward
+print 'episode: ',episode,'Evaluation Average Reward:',Env.total_reward
