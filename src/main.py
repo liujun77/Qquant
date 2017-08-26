@@ -11,7 +11,7 @@ import agent
 import numpy as np
 
 EPISODE = 10000 # Episode limitation
-STEP = 10000   #300 # Step limitation in an episode
+STEP = 3000   #300 # Step limitation in an episode
 TEST = 1 # The number of experiment test every 100 episode
 batch_size = 100
 
@@ -19,7 +19,7 @@ batch_size = 100
 
 # initialize OpenAI Gym env and dqn agent
 #env = gym.make(ENV_NAME)
-Env = env.Stock("../data/RB.csv") 
+Env = env.Stock("../data/RB.csv", train_steps=STEP) 
 Agent = agent.Dqn()
 
 print 'begin'
