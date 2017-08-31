@@ -53,8 +53,8 @@ class Dqn:
         # copy weights from model to target_model
         self.target_model.set_weights(self.model.get_weights())
         
-    def remember(self,state,action,reward,next_state,done):
-        self.replay_buffer.append((state,action,reward,next_state,done))
+    def remember(self,state,action,reward,next_state,done, islong):
+        self.replay_buffer.append((state,action,reward,next_state,done, islong))
                 
     def replay(self, batch_size):
         if len(self.replay_buffer)<batch_size:
@@ -72,11 +72,21 @@ class Dqn:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
-    def egreedy_action(self,state):
+    def egreedy_action(self,state, islong):
         if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_dim)
+            if islong is None:
+                return random.randrange(self.action_dim)
+            elif islong==True:
+                return random.randrange(0, 2)
+            elif islong==False:
+                return random.randrange(0, 3, 2)
         act_values = self.model.predict(state)
-        return np.argmax(act_values[0]) 
+        if islong is None:
+            return np.argmax(act_values[0])
+        elif islong is True:
+            return np.argmax(act_values[0]-np.array([0, 0, -1e10]))
+        else:
+            return np.argmax(act_values[0]-np.array([0, -1e10, 0]))
 
     def action(self,state):
         act_values = self.model.predict(state)
