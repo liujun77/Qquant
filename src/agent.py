@@ -13,7 +13,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 
-REPLAY_SIZE = 1000 # experience replay buffer size  
+REPLAY_SIZE = 100 # experience replay buffer size  
 
 class Dqn:
     def __init__(self):
@@ -21,7 +21,7 @@ class Dqn:
         self.replay_buffer = deque(maxlen = REPLAY_SIZE)
 
         # init some parameters
-        self.state_dim = 30
+        self.state_dim = 2
         self.action_dim = 3
         self.learning_rate = 0.001        
         
@@ -34,10 +34,6 @@ class Dqn:
         self.model = self._create_Q_network()
         self.update_target_model()
     
-    def _huber_loss(self, target, prediction):
-        # sqrt(1+error^2)-1
-        error = prediction - target
-        return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)    
         
     def _create_Q_network(self):
 
@@ -45,7 +41,7 @@ class Dqn:
         model.add(Dense(60, input_dim=self.state_dim, activation='relu'))
         model.add(Dense(120, activation='relu'))
         model.add(Dense(self.action_dim, activation='linear'))
-        model.compile(loss=self._huber_loss,
+        model.compile(loss="mse",
                       optimizer=Adam(lr=self.learning_rate))
         return model
     
@@ -53,8 +49,8 @@ class Dqn:
         # copy weights from model to target_model
         self.target_model.set_weights(self.model.get_weights())
         
-    def remember(self,state,action,reward,next_state,done, islong):
-        self.replay_buffer.append((state,action,reward,next_state,done, islong))
+    def remember(self,state,action,reward,next_state,done):
+        self.replay_buffer.append((state,action,reward,next_state,done))
                 
     def replay(self, batch_size):
         if len(self.replay_buffer)<batch_size:
@@ -72,22 +68,12 @@ class Dqn:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
-    def egreedy_action(self,state, islong):
+    def egreedy_action(self,state):
         if np.random.rand() <= self.epsilon:
-            if islong is None:
-                return random.randrange(self.action_dim)
-            elif islong==True:
-                return random.randrange(0, 2)
-            elif islong==False:
-                return random.randrange(0, 3, 2)
+            return random.randrange(self.action_dim)
         act_values = self.model.predict(state)
-        if islong is None:
-            return np.argmax(act_values[0])
-        elif islong is True:
-            return np.argmax(act_values[0]-np.array([0, 0, -1e10]))
-        else:
-            return np.argmax(act_values[0]-np.array([0, -1e10, 0]))
-
+        return np.argmax(act_values[0])
+        
     def action(self,state):
         act_values = self.model.predict(state)
         return np.argmax(act_values[0]) 
