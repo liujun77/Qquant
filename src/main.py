@@ -11,7 +11,7 @@ import agent
 import numpy as np
 import matplotlib.pyplot as plt
 
-EPISODE = 5000 # Episode limitation
+EPISODE = 10000 # Episode limitation
 STEP = 3000   #300 # Step limitation in an episode
 TEST = 1 # The number of experiment test every 100 episode
 batch_size = 32

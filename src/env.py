@@ -25,18 +25,24 @@ class Stock:
         self.stock_index = 0
         self.stock_index_end = 0
 
-        data = np.sin(np.arange(200*1.0)/15)
-        #noise = 5*np.random.rand(200)
-        #data = data+noise
+        data = np.sin(np.arange(230*1.0)/15)
+        noise = 0.05*np.random.rand(230)
+        data = data+noise
         close = data
+        self.training_data = close
+        for i in xrange(1):
+            close = shift(close.copy(), 1) - data
+            self.training_data = np.column_stack((self.training_data, close))
+        
+        
         diff = np.diff(data)
         diff = np.insert(diff, 0, 0)
 
-        xdata = np.column_stack((close, diff))
-        xdata = np.nan_to_num(xdata)
-        scaler = preprocessing.StandardScaler()
-        xdata = scaler.fit_transform(xdata)
-        self.training_data = xdata
+        #xdata = np.column_stack((close, diff))
+        #xdata = np.nan_to_num(xdata)
+        #scaler = preprocessing.StandardScaler()
+        #xdata = scaler.fit_transform(xdata)
+        self.training_data = self.training_data[30:, :]
         self.signal = np.zeros(self.training_data.shape[0])
         """
         if os.path.exists('train_data.npy'):
