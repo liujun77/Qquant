@@ -13,7 +13,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 
-REPLAY_SIZE = 100 # experience replay buffer size  
+REPLAY_SIZE = 2 # experience replay buffer size  
 
 class Dqn:
     def __init__(self):
@@ -21,7 +21,7 @@ class Dqn:
         self.replay_buffer = deque(maxlen = REPLAY_SIZE)
 
         # init some parameters
-        self.state_dim = 2
+        self.state_dim = 30
         self.action_dim = 3
         self.learning_rate = 0.001        
         

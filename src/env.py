@@ -17,26 +17,30 @@ import matplotlib.pyplot as plt
 class Stock:
     
     def __init__(self, filename, train_steps=3000):
-        #self.data = pd.read_csv(filename, index_col=0)
-        #self.data.index = pd.DatetimeIndex(self.data.index)
-        #self.data = self.data.dropna()
+        self.data = pd.read_csv(filename, index_col=0)
+        self.data.index = pd.DatetimeIndex(self.data.index)
+        self.data = self.data.dropna()
         
         self.training_data = None
         self.stock_index = 0
         self.stock_index_end = 0
 
-        data = np.sin(np.arange(230*1.0)/15)
-        noise = 0.05*np.random.rand(230)
-        data = data+noise
-        close = data
-        self.training_data = close
-        for i in xrange(1):
-            close = shift(close.copy(), 1) - data
-            self.training_data = np.column_stack((self.training_data, close))
+        #data = np.sin(np.arange(230*1.0)/15)
+        #noise = 0.05*np.random.rand(230)
+        #data = data+noise
+        #close = data
+        
+        ndata = self.data['RB.SHF'].values
+        ndata = preprocessing.scale(ndata)
+        self.training_data = ndata
+        
+        for i in xrange(29):
+            t = shift(ndata.copy(), i+1)
+            self.training_data = np.column_stack((self.training_data, t))
         
         
-        diff = np.diff(data)
-        diff = np.insert(diff, 0, 0)
+        #diff = np.diff(data)
+        #diff = np.insert(diff, 0, 0)
 
         #xdata = np.column_stack((close, diff))
         #xdata = np.nan_to_num(xdata)

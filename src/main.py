@@ -11,16 +11,16 @@ import agent
 import numpy as np
 import matplotlib.pyplot as plt
 
-EPISODE = 10000 # Episode limitation
+EPISODE = 5000 # Episode limitation
 STEP = 3000   #300 # Step limitation in an episode
 TEST = 1 # The number of experiment test every 100 episode
-batch_size = 32
+batch_size = 1
 
 
 
 # initialize OpenAI Gym env and dqn agent
 #env = gym.make(ENV_NAME)
-Env = env.Stock("../data/RB.csv", train_steps=STEP) 
+Env = env.Stock("../data/data.csv", train_steps=STEP) 
 Agent = agent.Dqn()
 
 def test():
@@ -59,7 +59,7 @@ for episode in xrange(EPISODE):
             print("step: {}, episode: {}/{}, score: {}, e: {:.2}"
                   .format(step, episode, EPISODE, Env.back_test(), Agent.epsilon))
             break
-    Agent.replay(batch_size)
+        Agent.replay(batch_size)
     #print Env.signal
     #raw_input()
 #%%
